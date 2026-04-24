@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createTask, deleteTask, fetchTasks, updateTask } from './api';
 import type { Task } from './types';
 
@@ -9,20 +9,74 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTaskIds, setActiveTaskIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const inFlightToggleIdsRef = useRef(new Set<string>());
+  const queuedToggleStatesRef = useRef(new Map<string, boolean>());
 
-  useEffect(() => {
-    async function loadTasks() {
-      try {
-        setTasks(await fetchTasks());
-      } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : 'Unable to load tasks.');
-      } finally {
+  async function loadTasks(showLoading = false) {
+    if (showLoading) {
+      setIsLoading(true);
+    }
+
+    try {
+      setTasks(await fetchTasks());
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : 'Unable to load tasks.');
+    } finally {
+      if (showLoading) {
         setIsLoading(false);
       }
     }
+  }
 
-    loadTasks();
+  useEffect(() => {
+    void loadTasks(true);
   }, []);
+
+  function addActiveTask(taskId: string) {
+    setActiveTaskIds((currentIds) => (currentIds.includes(taskId) ? currentIds : [...currentIds, taskId]));
+  }
+
+  function removeActiveTask(taskId: string) {
+    setActiveTaskIds((currentIds) => currentIds.filter((currentId) => currentId !== taskId));
+  }
+
+  async function flushToggle(taskId: string, completed: boolean) {
+    inFlightToggleIdsRef.current.add(taskId);
+    addActiveTask(taskId);
+
+    let updatedTask: Task | null = null;
+    let errorMessage: string | null = null;
+
+    try {
+      updatedTask = await updateTask(taskId, completed);
+    } catch (toggleError) {
+      errorMessage = toggleError instanceof Error ? toggleError.message : 'Unable to update task.';
+    } finally {
+      inFlightToggleIdsRef.current.delete(taskId);
+    }
+
+    const queuedCompleted = queuedToggleStatesRef.current.get(taskId);
+
+    if (updatedTask && queuedCompleted !== true && queuedCompleted !== false) {
+      setTasks((currentTasks) =>
+        currentTasks.map((currentTask) => (currentTask.id === taskId ? updatedTask : currentTask)),
+      );
+    }
+
+    if (typeof queuedCompleted === 'boolean' && queuedCompleted !== completed) {
+      queuedToggleStatesRef.current.delete(taskId);
+      void flushToggle(taskId, queuedCompleted);
+      return;
+    }
+
+    queuedToggleStatesRef.current.delete(taskId);
+    removeActiveTask(taskId);
+
+    if (errorMessage) {
+      setError(errorMessage);
+      void loadTasks();
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,24 +101,41 @@ function App() {
     }
   }
 
-  async function handleToggle(task: Task) {
-    setActiveTaskIds((currentIds) => [...currentIds, task.id]);
+  function handleToggle(taskId: string) {
+    let nextCompleted: boolean | null = null;
+
+    setTasks((currentTasks) =>
+      currentTasks.map((currentTask) => {
+        if (currentTask.id !== taskId) {
+          return currentTask;
+        }
+
+        nextCompleted = !currentTask.completed;
+        return {
+          ...currentTask,
+          completed: nextCompleted,
+          updatedAt: new Date().toISOString(),
+        };
+      }),
+    );
+
+    if (nextCompleted === null) {
+      return;
+    }
+
     setError(null);
 
-    try {
-      const updatedTask = await updateTask(task.id, !task.completed);
-      setTasks((currentTasks) =>
-        currentTasks.map((currentTask) => (currentTask.id === task.id ? updatedTask : currentTask)),
-      );
-    } catch (toggleError) {
-      setError(toggleError instanceof Error ? toggleError.message : 'Unable to update task.');
-    } finally {
-      setActiveTaskIds((currentIds) => currentIds.filter((currentId) => currentId !== task.id));
+    if (inFlightToggleIdsRef.current.has(taskId)) {
+      queuedToggleStatesRef.current.set(taskId, nextCompleted);
+      addActiveTask(taskId);
+      return;
     }
+
+    void flushToggle(taskId, nextCompleted);
   }
 
   async function handleDelete(taskId: string) {
-    setActiveTaskIds((currentIds) => [...currentIds, taskId]);
+    addActiveTask(taskId);
     setError(null);
 
     try {
@@ -72,8 +143,9 @@ function App() {
       setTasks((currentTasks) => currentTasks.filter((task) => task.id !== taskId));
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : 'Unable to delete task.');
+      void loadTasks();
     } finally {
-      setActiveTaskIds((currentIds) => currentIds.filter((currentId) => currentId !== taskId));
+      removeActiveTask(taskId);
     }
   }
 
@@ -135,7 +207,7 @@ function App() {
                       checked={task.completed}
                       className="checkbox"
                       disabled={isActive}
-                      onChange={() => handleToggle(task)}
+                      onChange={() => handleToggle(task.id)}
                       type="checkbox"
                     />
                     <span className={task.completed ? 'title title-complete' : 'title'}>{task.title}</span>

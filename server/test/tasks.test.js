@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const request = require('supertest');
 const { createApp } = require('../src/app');
+const { createTaskStore } = require('../src/taskStore');
 
 async function createTestContext() {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'task-manager-api-'));
@@ -78,6 +79,33 @@ test('persists tasks to disk between app instances', async () => {
 
     assert.equal(response.body.length, 1);
     assert.equal(response.body[0].title, 'Persist me');
+  } finally {
+    await fs.rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('serializes concurrent file writes so task data is not lost', async () => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'task-manager-store-'));
+  const storePath = path.join(directory, 'tasks.json');
+  const taskStore = createTaskStore(storePath);
+
+  try {
+    await Promise.all([
+      taskStore.create('First concurrent task'),
+      taskStore.create('Second concurrent task'),
+      taskStore.create('Third concurrent task'),
+    ]);
+
+    const tasks = await taskStore.getAll();
+    const titles = tasks.map((task) => task.title).sort();
+    const fileContents = await fs.readFile(storePath, 'utf8');
+
+    assert.deepEqual(titles, [
+      'First concurrent task',
+      'Second concurrent task',
+      'Third concurrent task',
+    ]);
+    assert.doesNotThrow(() => JSON.parse(fileContents));
   } finally {
     await fs.rm(directory, { recursive: true, force: true });
   }

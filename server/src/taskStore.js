@@ -28,58 +28,73 @@ async function writeTasks(filePath, tasks) {
 }
 
 function createTaskStore(filePath) {
+  let pendingMutation = Promise.resolve();
+
+  function runExclusive(operation) {
+    const nextMutation = pendingMutation.then(operation);
+    pendingMutation = nextMutation.catch(() => {});
+    return nextMutation;
+  }
+
   return {
     async getAll() {
+      await pendingMutation;
       return readTasks(filePath);
     },
 
     async create(title) {
-      const tasks = await readTasks(filePath);
-      const timestamp = new Date().toISOString();
-      const task = {
-        id: randomUUID(),
-        title,
-        completed: false,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      };
+      return runExclusive(async () => {
+        const tasks = await readTasks(filePath);
+        const timestamp = new Date().toISOString();
+        const task = {
+          id: randomUUID(),
+          title,
+          completed: false,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        };
 
-      tasks.unshift(task);
-      await writeTasks(filePath, tasks);
+        tasks.unshift(task);
+        await writeTasks(filePath, tasks);
 
-      return task;
+        return task;
+      });
     },
 
     async update(id, updates) {
-      const tasks = await readTasks(filePath);
-      const taskIndex = tasks.findIndex((task) => task.id === id);
+      return runExclusive(async () => {
+        const tasks = await readTasks(filePath);
+        const taskIndex = tasks.findIndex((task) => task.id === id);
 
-      if (taskIndex === -1) {
-        return null;
-      }
+        if (taskIndex === -1) {
+          return null;
+        }
 
-      const updatedTask = {
-        ...tasks[taskIndex],
-        ...updates,
-        updatedAt: new Date().toISOString(),
-      };
+        const updatedTask = {
+          ...tasks[taskIndex],
+          ...updates,
+          updatedAt: new Date().toISOString(),
+        };
 
-      tasks[taskIndex] = updatedTask;
-      await writeTasks(filePath, tasks);
+        tasks[taskIndex] = updatedTask;
+        await writeTasks(filePath, tasks);
 
-      return updatedTask;
+        return updatedTask;
+      });
     },
 
     async remove(id) {
-      const tasks = await readTasks(filePath);
-      const nextTasks = tasks.filter((task) => task.id !== id);
+      return runExclusive(async () => {
+        const tasks = await readTasks(filePath);
+        const nextTasks = tasks.filter((task) => task.id !== id);
 
-      if (nextTasks.length === tasks.length) {
-        return false;
-      }
+        if (nextTasks.length === tasks.length) {
+          return false;
+        }
 
-      await writeTasks(filePath, nextTasks);
-      return true;
+        await writeTasks(filePath, nextTasks);
+        return true;
+      });
     },
   };
 }
