@@ -1,0 +1,22 @@
+{
+  "name": "task-manager",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm --prefix client install && npm --prefix server install",
+    "client:dev": "npm --prefix client run dev",
+    "server:dev": "npm --prefix server run dev",
+    "client:build": "npm --prefix client run build",
+    "server:test": "npm --prefix server run test",
+    "dev": "concurrently \"npm:server:dev\" \"npm:client:dev\"",
+    "build": "npm run client:build",
+    "test": "npm run server:test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Full-stack task manager take-home assignment",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
