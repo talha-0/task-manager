@@ -101,27 +101,18 @@ function App() {
     }
   }
 
-  function handleToggle(taskId: string) {
-    let nextCompleted: boolean | null = null;
-
+  function handleToggle(taskId: string, nextCompleted: boolean) {
     setTasks((currentTasks) =>
-      currentTasks.map((currentTask) => {
-        if (currentTask.id !== taskId) {
-          return currentTask;
-        }
-
-        nextCompleted = !currentTask.completed;
-        return {
-          ...currentTask,
-          completed: nextCompleted,
-          updatedAt: new Date().toISOString(),
-        };
-      }),
+      currentTasks.map((currentTask) =>
+        currentTask.id === taskId
+          ? {
+              ...currentTask,
+              completed: nextCompleted,
+              updatedAt: new Date().toISOString(),
+            }
+          : currentTask,
+      ),
     );
-
-    if (nextCompleted === null) {
-      return;
-    }
 
     setError(null);
 
@@ -207,7 +198,7 @@ function App() {
                       checked={task.completed}
                       className="checkbox"
                       disabled={isActive}
-                      onChange={() => handleToggle(task.id)}
+                      onChange={(event) => handleToggle(task.id, event.currentTarget.checked)}
                       type="checkbox"
                     />
                     <span className={task.completed ? 'title title-complete' : 'title'}>{task.title}</span>
