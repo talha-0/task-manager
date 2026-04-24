@@ -4,7 +4,7 @@ A small full-stack task manager built with React and Express. Users can add task
 
 ## Status
 
-The backend API now supports task creation, listing, completion updates, and deletion with JSON-file persistence. The React UI is wired up and lands in a follow-up commit to keep the history small and descriptive.
+The app is complete end to end. The React frontend talks to the Express API for task creation, completion updates, deletion, and initial loading. Tasks persist in `server/data/tasks.json`, so a browser refresh keeps the current list intact.
 
 ## Planned Stack
 
@@ -23,6 +23,12 @@ npm run dev
 ```
 
 The frontend runs on `http://localhost:5173` and the backend API runs on `http://localhost:3001`.
+
+## Project Structure
+
+- `client/` contains the React + TypeScript UI built with Vite
+- `server/` contains the Express API, file-backed task store, and backend tests
+- `server/data/tasks.json` is the lightweight persistence layer used for the assignment
 
 ## API Endpoints
 
@@ -44,3 +50,4 @@ npm test
 - A JSON file keeps the assignment simple and makes persistence easy to inspect locally.
 - The project is split into `client` and `server` folders to keep frontend and backend responsibilities clear.
 - The API uses a file-backed store instead of a database so setup stays minimal for a take-home assignment.
+- Backend tests focus on the API contract and persistence behavior; that gives coverage on the core business logic without adding a full frontend test harness for a small assignment.
