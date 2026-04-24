@@ -13,8 +13,7 @@ function App() {
   useEffect(() => {
     async function loadTasks() {
       try {
-        const nextTasks = await fetchTasks();
-        setTasks(nextTasks);
+        setTasks(await fetchTasks());
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : 'Unable to load tasks.');
       } finally {
@@ -78,71 +77,72 @@ function App() {
     }
   }
 
-  return (
-    <main className="app-shell">
-      <section className="panel">
-        <div className="panel-header">
-          <div>
-            <p className="eyebrow">Client Project Assignment</p>
-            <h1>Task Manager</h1>
-          </div>
-          <p className="summary">
-            Add, complete, and remove tasks with data persisted through the Express API.
-          </p>
-        </div>
+  const completedCount = tasks.filter((task) => task.completed).length;
 
-        <form className="task-form" onSubmit={handleSubmit}>
-          <label className="task-input-group">
-            <span className="sr-only">Task title</span>
-            <input
-              aria-label="Task title"
-              className="task-input"
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="What needs to get done?"
-              value={title}
-            />
+  return (
+    <main className="page">
+      <header className="hero">
+        <p className="eyebrow">Task Manager</p>
+        <h1>Small, clean, and persistent.</h1>
+        <p className="intro">
+          A simple React and Express task app with a minimal workspace, comfortable spacing, and
+          task data saved on the backend.
+        </p>
+      </header>
+
+      <section className="workspace" aria-label="Task workspace">
+        <form className="composer" onSubmit={handleSubmit}>
+          <label className="sr-only" htmlFor="task-title">
+            Task title
           </label>
-          <button className="primary-button" disabled={isSubmitting} type="submit">
-            {isSubmitting ? 'Adding...' : 'Add task'}
+          <input
+            id="task-title"
+            className="input"
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="Add a task"
+            value={title}
+          />
+          <button className="button button-primary" disabled={isSubmitting} type="submit">
+            {isSubmitting ? 'Adding...' : 'Add'}
           </button>
         </form>
 
-        <div className="status-row">
-          <p>
-            {tasks.length} task{tasks.length === 1 ? '' : 's'} total
-          </p>
-          <p>{tasks.filter((task) => task.completed).length} completed</p>
+        <div className="meta">
+          <span>{tasks.length} total</span>
+          <span>{completedCount} completed</span>
         </div>
 
-        {error ? <p className="feedback error-message">{error}</p> : null}
+        {error ? <p className="notice notice-error">{error}</p> : null}
 
-        {isLoading ? (
-          <p className="feedback">Loading tasks...</p>
-        ) : tasks.length === 0 ? (
-          <div className="empty-state">
-            <p className="empty-title">No tasks yet.</p>
-            <p className="empty-copy">Create your first task to see it persisted across refreshes.</p>
+        {isLoading ? <p className="notice">Loading tasks...</p> : null}
+
+        {!isLoading && tasks.length === 0 ? (
+          <div className="empty">
+            <p>No tasks yet.</p>
+            <p>Use the field above to create your first item.</p>
           </div>
-        ) : (
-          <ul className="task-list">
+        ) : null}
+
+        {!isLoading && tasks.length > 0 ? (
+          <ul className="list">
             {tasks.map((task) => {
               const isActive = activeTaskIds.includes(task.id);
 
               return (
-                <li className={`task-card ${task.completed ? 'task-card-complete' : ''}`} key={task.id}>
-                  <label className="task-toggle">
+                <li className="item" key={task.id}>
+                  <label className="item-main">
                     <input
                       checked={task.completed}
-                      className="task-checkbox"
+                      className="checkbox"
                       disabled={isActive}
                       onChange={() => handleToggle(task)}
                       type="checkbox"
                     />
-                    <span className="task-title">{task.title}</span>
+                    <span className={task.completed ? 'title title-complete' : 'title'}>{task.title}</span>
                   </label>
                   <button
                     aria-label={`Delete ${task.title}`}
-                    className="delete-button"
+                    className="button button-muted"
                     disabled={isActive}
                     onClick={() => handleDelete(task.id)}
                     type="button"
@@ -153,7 +153,7 @@ function App() {
               );
             })}
           </ul>
-        )}
+        ) : null}
       </section>
     </main>
   );

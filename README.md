@@ -51,3 +51,4 @@ npm test
 - The project is split into `client` and `server` folders to keep frontend and backend responsibilities clear.
 - The API uses a file-backed store instead of a database so setup stays minimal for a take-home assignment.
 - Backend tests focus on the API contract and persistence behavior; that gives coverage on the core business logic without adding a full frontend test harness for a small assignment.
+- The frontend styling stays deliberately small and plain so the UI is easy to adjust without maintaining a large CSS file.

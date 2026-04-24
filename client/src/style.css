@@ -1,12 +1,7 @@
 :root {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: #0f172a;
-  background:
-    radial-gradient(circle at top left, rgba(14, 165, 233, 0.22), transparent 28%),
-    radial-gradient(circle at right, rgba(249, 115, 22, 0.18), transparent 24%),
-    linear-gradient(160deg, #fff7ed 0%, #f8fafc 50%, #e0f2fe 100%);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  color: #191919;
+  background: #ffffff;
+  font: 16px/1.5 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -15,8 +10,14 @@
   box-sizing: border-box;
 }
 
-body {
+body,
+p,
+h1,
+ul {
   margin: 0;
+}
+
+body {
   min-width: 320px;
   min-height: 100vh;
 }
@@ -46,218 +47,177 @@ button {
   border: 0;
 }
 
-.app-shell {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 2rem;
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 64px 24px 96px;
 }
 
-.panel {
-  width: min(100%, 760px);
-  padding: clamp(1.5rem, 4vw, 3rem);
-  border-radius: 32px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.14);
-  backdrop-filter: blur(20px);
-}
-
-.panel-header {
+.hero,
+.workspace,
+.composer,
+.meta,
+.item,
+.item-main {
   display: flex;
-  gap: 1.5rem;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
+}
+
+.hero,
+.workspace {
+  flex-direction: column;
+}
+
+.hero {
+  gap: 16px;
+  margin-bottom: 48px;
 }
 
 .eyebrow {
-  margin: 0 0 0.7rem;
+  color: #6b6b6b;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #c2410c;
 }
 
 h1 {
-  margin: 0;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  line-height: 0.92;
-}
-
-.summary {
-  margin: 0;
-  max-width: 28ch;
-  line-height: 1.7;
-  color: #475569;
-}
-
-.task-form {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.9rem;
-  margin-bottom: 1.2rem;
-}
-
-.task-input-group {
-  display: block;
-}
-
-.task-input {
-  width: 100%;
-  padding: 1rem 1.15rem;
-  border-radius: 18px;
-  border: 1px solid #cbd5e1;
-  background: rgba(255, 255, 255, 0.95);
-  color: #0f172a;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.task-input:focus {
-  outline: none;
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
-}
-
-.primary-button {
-  border: 0;
-  border-radius: 18px;
-  padding: 1rem 1.4rem;
-  background: linear-gradient(135deg, #0f172a, #0369a1);
-  color: #f8fafc;
+  font-size: clamp(40px, 8vw, 56px);
   font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
 }
 
-.primary-button:disabled,
-.delete-button:disabled {
-  opacity: 0.65;
+.intro,
+.meta,
+.empty,
+.notice {
+  color: #5f5f5f;
+}
+
+.intro {
+  max-width: 560px;
+}
+
+.workspace {
+  gap: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e9e9e7;
+}
+
+.composer,
+.item {
+  gap: 16px;
+}
+
+.composer {
+  align-items: center;
+}
+
+.input,
+.button,
+.item {
+  border: 1px solid #e9e9e7;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 16px;
+  color: #191919;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #191919;
+}
+
+.button {
+  padding: 16px;
+}
+
+.button-primary {
+  min-width: 96px;
+  color: #ffffff;
+  background: #191919;
+  border-color: #191919;
+}
+
+.button-muted {
+  color: #6b6b6b;
+}
+
+.button:disabled {
+  opacity: 0.6;
   cursor: wait;
 }
 
-.status-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  color: #475569;
-  font-size: 0.95rem;
+.meta {
+  gap: 16px;
+  padding: 0 8px;
+  font-size: 14px;
 }
 
-.status-row p,
-.feedback,
-.empty-title,
-.empty-copy {
-  margin: 0;
+.notice,
+.empty {
+  padding: 16px;
+  border-radius: 8px;
+  background: #f7f7f5;
 }
 
-.feedback {
-  padding: 0.9rem 1rem;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.75);
-  color: #334155;
+.notice-error {
+  color: #9f1239;
+  background: #fff1f2;
 }
 
-.error-message {
-  background: rgba(254, 226, 226, 0.9);
-  color: #991b1b;
-}
-
-.empty-state {
-  padding: 1.4rem;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px dashed #cbd5e1;
-}
-
-.empty-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.empty-copy {
-  margin-top: 0.35rem;
-  color: #475569;
-}
-
-.task-list {
+.list {
   list-style: none;
   padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 0.85rem;
 }
 
-.task-card {
-  display: flex;
+.item {
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 1.1rem;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(203, 213, 225, 0.9);
+  padding: 16px;
 }
 
-.task-card-complete {
-  background: rgba(240, 253, 244, 0.92);
+.list li + li {
+  margin-top: 16px;
 }
 
-.task-toggle {
-  display: flex;
+.item-main {
   align-items: center;
-  gap: 0.85rem;
-  flex: 1;
+  gap: 16px;
   min-width: 0;
+  flex: 1;
 }
 
-.task-checkbox {
-  inline-size: 1.1rem;
-  block-size: 1.1rem;
-  accent-color: #0284c7;
+.checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #191919;
 }
 
-.task-title {
-  font-size: 1rem;
-  line-height: 1.45;
+.title {
+  color: #191919;
   word-break: break-word;
 }
 
-.task-card-complete .task-title {
-  color: #64748b;
+.title-complete {
+  color: #8a8a8a;
   text-decoration: line-through;
 }
 
-.delete-button {
-  border: 0;
-  border-radius: 14px;
-  padding: 0.7rem 1rem;
-  background: rgba(254, 226, 226, 0.95);
-  color: #b91c1c;
-  font-weight: 700;
-}
-
-@media (max-width: 680px) {
-  .app-shell {
-    padding: 1rem;
+@media (max-width: 640px) {
+  .page {
+    padding: 48px 16px 64px;
   }
 
-  .panel-header,
-  .task-form,
-  .task-card,
-  .status-row {
-    grid-template-columns: 1fr;
+  .composer,
+  .item {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .summary {
-    max-width: none;
-  }
-
-  .delete-button,
-  .primary-button {
-    width: 100%;
   }
 }
